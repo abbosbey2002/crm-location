@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geolocation Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link href="https://unpkg.com/tailwindcss@^2.0/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        #map {
+            height: 600px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-4">Geolocation Map</h1>
+        <p id="result" class="mb-4"></p>
+        <div id="map" class="rounded-lg shadow-lg"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        // Oldindan belgilangan joy (latitude va longitude)
+        const predefinedLatitude = 41.2995; // Toshkent shahri uchun
+        const predefinedLongitude = 69.2401; // Toshkent shahri uchun
+        const radius = 3; // radius metrda (misol uchun 1000 metr)
+
+        // Xarita yaratish
+        const map = L.map('map').setView([predefinedLatitude, predefinedLongitude], 13);
+
+        // Xarita qatlamini qo'shish
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Oldindan belgilangan joy
+        const predefinedMarker = L.marker([predefinedLatitude, predefinedLongitude]).addTo(map)
+            .bindPopup('Oldindan belgilangan joy')
+            .openPopup();
+
+        // Oldindan belgilangan joy atrofida radiusli doira chizish
+        const predefinedCircle = L.circle([predefinedLatitude, predefinedLongitude], {
+            color: 'green', // radius rangi
+            fillColor: '#2ECC40', // doira rangi
+            fillOpacity: 0.5,
+            radius: radius
+        }).addTo(map);
+
+        function updateLocation(position) {
+            const userLatitude = position.coords.latitude;
+            const userLongitude = position.coords.longitude;
+
+            const distance = calculateDistance(predefinedLatitude, predefinedLongitude, userLatitude, userLongitude);
+            document.getElementById("result").textContent = `User is ${distance.toFixed(2)} meters away from the predefined location.`;
+
+            // Userning joylashuvini marker bilan ko'rsatish
+            const userMarker = L.marker([userLatitude, userLongitude]).addTo(map)
+                .bindPopup('Sizning joylashuvingiz')
+                .openPopup();
+
+            // User va oldindan belgilangan joy orasidagi masofani ko'rsatish uchun chiziq chizish
+            L.polyline([
+                [predefinedLatitude, predefinedLongitude],
+                [userLatitude, userLongitude]
+            ]).addTo(map);
+        }
+
+        function error() {
+            document.getElementById("result").textContent = "Unable to retrieve your location.";
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Yerning radiusi, metrda
+            const φ1 = lat1 * Math.PI/180;
+            const φ2 = lat2 * Math.PI/180;
+            const Δφ = (lat2 - lat1) * Math.PI/180;
+            const Δλ = (lon2 - lon1) * Math.PI/180;
+
+            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                      Math.cos(φ1) * Math.cos(φ2) *
+                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+            const d = R * c; // masofa metrda
+
+            return d;
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(updateLocation, error, {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000
+            });
+        } else {
+            document.getElementById("result").textContent = "Geolocation is not supported by this browser.";
+        }
+    </script>
+</body>
+</html>
