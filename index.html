@@ -24,7 +24,7 @@
         // Oldindan belgilangan joy (latitude va longitude)
         const predefinedLatitude = 41.2995; // Toshkent shahri uchun
         const predefinedLongitude = 69.2401; // Toshkent shahri uchun
-        const radius = 3; // radius metrda (misol uchun 1000 metr)
+        const radius = 10; // radius metrda (misol uchun 1000 metr)
 
         // Xarita yaratish
         const map = L.map('map').setView([predefinedLatitude, predefinedLongitude], 13);
@@ -34,9 +34,18 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
+        // Oldindan belgilangan joy uchun ikon URL manzilini kiriting
+        const officeIconUrl = 'office.png'; // Office joylashuvining ikon URL manzilini kiriting
+        const officeIcon = L.icon({
+            iconUrl: officeIconUrl,
+            iconSize: [38, 38], // ikonaning o'lchami
+            iconAnchor: [19, 19], // ikonani moslash nuqtasi (center)
+            popupAnchor: [0, -19] // pop-up nuqtasi
+        });
+
         // Oldindan belgilangan joy
-        const predefinedMarker = L.marker([predefinedLatitude, predefinedLongitude]).addTo(map)
-            .bindPopup('Oldindan belgilangan joy')
+        const predefinedMarker = L.marker([predefinedLatitude, predefinedLongitude], {icon: officeIcon}).addTo(map)
+            .bindPopup('Sizning officeingiz')
             .openPopup();
 
         // Oldindan belgilangan joy atrofida radiusli doira chizish
@@ -47,6 +56,15 @@
             radius: radius
         }).addTo(map);
 
+        // Foydalanuvchining joylashuvi uchun ikon URL manzilini kiriting
+        const userIconUrl = 'car.png'; // Foydalanuvchining ikon URL manzilini kiriting
+        const userIcon = L.icon({
+            iconUrl: userIconUrl,
+            iconSize: [38, 38], // ikonaning o'lchami
+            iconAnchor: [19, 19], // ikonani moslash nuqtasi (center)
+            popupAnchor: [0, -19] // pop-up nuqtasi
+        });
+
         function updateLocation(position) {
             const userLatitude = position.coords.latitude;
             const userLongitude = position.coords.longitude;
@@ -54,12 +72,12 @@
             const distance = calculateDistance(predefinedLatitude, predefinedLongitude, userLatitude, userLongitude);
             document.getElementById("result").textContent = `User is ${distance.toFixed(2)} meters away from the predefined location.`;
 
-            // Userning joylashuvini marker bilan ko'rsatish
-            const userMarker = L.marker([userLatitude, userLongitude]).addTo(map)
+            // Foydalanuvchining joylashuvini marker bilan ko'rsatish
+            const userMarker = L.marker([userLatitude, userLongitude], {icon: userIcon}).addTo(map)
                 .bindPopup('Sizning joylashuvingiz')
                 .openPopup();
 
-            // User va oldindan belgilangan joy orasidagi masofani ko'rsatish uchun chiziq chizish
+            // Foydalanuvchi va oldindan belgilangan joy orasidagi masofani ko'rsatish uchun chiziq chizish
             L.polyline([
                 [predefinedLatitude, predefinedLongitude],
                 [userLatitude, userLongitude]
